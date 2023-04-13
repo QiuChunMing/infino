@@ -7,7 +7,6 @@ use std::sync::Arc;
 
 use axum::{extract::State, routing::get, routing::post, Json, Router};
 use serde::{Deserialize, Serialize};
-use serde_json;
 use tokio::time::{sleep, Duration};
 
 // TODO: figure out a way to not have LogMessage and DataPoint way deep in tsldb / or change the API to time/value.
@@ -60,17 +59,17 @@ async fn commit_in_loop(state: Arc<AppState>, commit_interval_in_seconds: u32) {
   loop {
     let now = chrono::Utc::now().to_rfc2822();
     println!("Committing at {}", now);
-    (*state).tsldb.commit(true);
+    state.tsldb.commit(true);
     sleep(Duration::from_secs(commit_interval_in_seconds as u64)).await;
   }
 }
 
 async fn app(config_dir_path: &str, image_name: &str, image_tag: &str) -> Router {
   // Read the settings from the config directory.
-  let settings = Settings::new(&config_dir_path).unwrap();
+  let settings = Settings::new(config_dir_path).unwrap();
 
   // Create a new tsldb.
-  let tsldb = match Tsldb::new(&config_dir_path) {
+  let tsldb = match Tsldb::new(config_dir_path) {
     Ok(tsldb) => tsldb,
     Err(err) => panic!("Unable to initialize tsldb with err {}", err),
   };
@@ -124,7 +123,7 @@ async fn append_log(State(state): State<Arc<AppState>>, Json(log_message): Json<
   state.queue.publish(&log_message_string).await.unwrap();
   state
     .tsldb
-    .append_log_message(log_message.get_time(), &log_message.get_message());
+    .append_log_message(log_message.get_time(), log_message.get_message());
 }
 
 async fn append_ts(
