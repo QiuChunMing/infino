@@ -34,6 +34,7 @@ You can find code coverage using [Tarpaulin](https://github.com/xd009642/tarpaul
 ```
 $ cargo install cargo-tarpaulin
 $ cargo tarpaulin
+$ cargo tarpaulin -p tsldb
 ```
 
 
